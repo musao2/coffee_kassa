@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './lib/auth'
-import { supabaseConfigured } from './lib/supabase'
+import { configError, supabaseConfigured } from './lib/supabase'
 import { LuLogOut } from 'react-icons/lu'
 import Splash from './components/Splash'
 import { Mark } from './components/Logo'
@@ -29,7 +29,9 @@ function CashierOnly({ children }) {
 
 export default function App() {
   if (!supabaseConfigured) {
-    return <div className="splash"><Mark size={64} /><h2>Supabase ulanmagan</h2><p><code>.env</code> faylini to‘ldiring.</p></div>
+    return <div className="splash"><Mark size={64} /><h2>Supabase ulanmagan</h2>
+        <p>{configError}</p>
+        <p className="muted small">Vercel → Settings → Environment Variables da qiymatni tekshiring va qayta deploy qiling.</p></div>
   }
   return (
     <Routes>
