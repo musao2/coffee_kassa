@@ -1,0 +1,124 @@
+/* ===================== COFFEEGRAM KASSA ===================== */
+.kassa { min-height: 100vh; min-height: 100dvh; background: var(--paper); }
+.pos-top {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--ink); color: var(--paper);
+}
+.pos-top .cafe { display: grid; min-width: 0; flex: 1; line-height: 1.2; }
+.pos-top .cafe small { color: rgba(244, 238, 228, 0.6); font-size: 12px; }
+.pos-top .cafe b { font-family: var(--head); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-top .seg { flex: none; }
+.pos-top .hide-sm { display: none; }
+.pos-main { max-width: 1180px; margin: 0 auto; padding: 14px 14px calc(250px + var(--safe-b)); }
+@media (min-width: 700px) { .pos-top .hide-sm { display: inline-flex; } .pos-top { padding: 12px 20px; gap: 14px; } }
+
+/* Buyurtma maydoni */
+.register { display: grid; gap: 14px; }
+.register-left { display: grid; gap: 12px; align-content: start; }
+.menu-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 520px) { .menu-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .menu-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.menu-item {
+  position: relative; text-align: left; border: 2px solid transparent; background: var(--card); border-radius: 18px;
+  padding: 14px; display: grid; gap: 10px; min-height: 96px; align-content: space-between;
+  box-shadow: 0 2px 0 var(--line); transition: transform 0.06s, border-color 0.15s;
+}
+.menu-item:active { transform: scale(0.97); }
+.menu-item.in { border-color: var(--ink); }
+.menu-item b { font-size: 15px; line-height: 1.25; }
+.menu-item small { color: var(--ink-3); font-weight: 700; font-size: 14px; }
+.menu-item em {
+  position: absolute; top: 10px; right: 10px; background: var(--ink); color: var(--paper); font-style: normal; font-weight: 800;
+  min-width: 28px; height: 28px; border-radius: 99px; display: grid; place-items: center; font-size: 13px; padding: 0 6px;
+}
+
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.keypad button {
+  min-height: 64px; border: 0; border-radius: 18px; background: var(--card); font-family: var(--head); font-size: 26px; font-weight: 700;
+  box-shadow: 0 2px 0 var(--line); display: grid; place-items: center;
+}
+.keypad button:active { transform: translateY(2px); box-shadow: none; }
+.keypad .key-del { background: var(--paper-2); color: var(--ink-3); }
+.amount-display { background: var(--card); border-radius: var(--radius); padding: 16px 18px; border: 1px solid var(--line); }
+.amount-display > div { font-family: var(--head); font-size: 40px; font-weight: 800; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.amount-display > div span { font-size: 17px; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+.amount-display .placeholder { color: var(--line); }
+
+/* Buyurtma paneli: telefonda pastki panel, katta ekranda o'ng ustun */
+.order {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; background: var(--card);
+  border-radius: 22px 22px 0 0; box-shadow: 0 -12px 30px -12px rgba(20, 17, 16, 0.35);
+  padding: 12px 14px calc(12px + var(--safe-b)); display: grid; gap: 10px;
+}
+.order-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.order-head h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.order-head .count { background: var(--ink); color: var(--paper); border-radius: 99px; font-size: 12px; padding: 2px 8px; }
+.order-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: 32vh; overflow: auto; }
+.order-lines li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.order-lines li > div:first-child { display: grid; min-width: 0; }
+.order-lines b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order-lines small { color: var(--muted); font-size: 12px; }
+.qty { display: flex; align-items: center; gap: 6px; }
+.qty button { width: 34px; height: 34px; border-radius: 10px; border: 0; background: var(--paper-2); display: grid; place-items: center; }
+.qty span { min-width: 20px; text-align: center; font-weight: 700; }
+.order-total { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.order-total b { font-family: var(--head); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.order-cb { font-size: 13px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+.order-cb b { color: var(--green); }
+.order .collapse { display: none; }
+.order.open .collapse { display: grid; }
+.order-toggle { background: none; border: 0; display: flex; align-items: center; gap: 6px; color: var(--ink-3); font-weight: 600; font-size: 13px; padding: 0; }
+@media (min-width: 900px) {
+  .register { grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); align-items: start; gap: 20px; }
+  .pos-main { padding-bottom: 40px; }
+  .order { position: sticky; top: 84px; border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 18px; }
+  .order .collapse { display: grid; }
+  .order-toggle { display: none; }
+  .order-lines { max-height: 46vh; }
+  .order-total b { font-size: 32px; }
+}
+
+/* QR bosqichi */
+.qr-stage { display: grid; place-items: center; padding: 4px 0 24px; }
+.qr-card { background: var(--card); border-radius: var(--radius-lg); padding: 20px; width: 100%; max-width: 420px; box-shadow: var(--shadow); display: grid; gap: 12px; text-align: center; justify-items: center; }
+.qr-card > .btn, .qr-card > .alert { width: 100%; }
+.qr-box { background: #fff; padding: 10px; border-radius: 20px; border: 2px solid var(--line); line-height: 0; }
+.qr-box svg { width: min(260px, 68vw); height: auto; }
+.qr-sum { font-family: var(--head); font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+.waiting { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.done-big { font-family: var(--head); font-size: 30px; font-weight: 800; color: var(--green); display: grid; letter-spacing: -0.02em; }
+.done-big small { font-family: var(--body); font-size: 14px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+
+/* Hisobot */
+.report { display: grid; gap: 14px; }
+.report-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.report-head h2 { font-size: 24px; }
+
+/* ===================== Mijozga qaragan QR ekran ===================== */
+.display { min-height: 100vh; min-height: 100dvh; background: var(--ink); color: var(--paper); display: flex; flex-direction: column; padding: 20px 24px; user-select: none; position: relative; overflow: hidden; }
+.display .rays { position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(244, 238, 228, 0.03) 0 6deg, transparent 6deg 18deg); pointer-events: none; animation: spin 240s linear infinite; }
+.display-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; position: relative; }
+.display-cafe { color: rgba(244, 238, 228, 0.65); font-size: 16px; }
+.display-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 22px; position: relative; }
+.display-center h1 { font-size: clamp(30px, 5vw, 60px); max-width: 900px; }
+.display-center h1 span { color: var(--caramel); }
+.display-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 230px)); gap: 14px; }
+.display-steps div { background: rgba(244, 238, 228, 0.06); border: 1px solid rgba(244, 238, 228, 0.1); border-radius: 20px; padding: 18px; font-size: 16px; color: rgba(244, 238, 228, 0.85); line-height: 1.4; display: grid; justify-items: center; gap: 10px; }
+.display-steps svg { color: var(--caramel); }
+.display-qr { flex: 1; display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; position: relative; padding: 16px 0; }
+.display-qr-box { background: #fff; padding: 16px; border-radius: 30px; line-height: 0; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7); }
+.display-qr-box svg { width: min(420px, 78vw); height: auto; }
+.display-info { display: grid; gap: 14px; min-width: 280px; max-width: 420px; flex: 1; }
+.display-info h2 { font-size: clamp(26px, 3vw, 34px); }
+.display-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 18px; color: rgba(244, 238, 228, 0.85); }
+.display-items li { display: flex; justify-content: space-between; gap: 16px; }
+.display-total { display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid rgba(244, 238, 228, 0.2); padding-top: 12px; font-size: 18px; }
+.display-total b { font-family: var(--head); font-size: 38px; font-weight: 800; }
+.display-cb { background: rgba(47, 122, 75, 0.3); color: #cfe9d6; padding: 14px 18px; border-radius: 16px; font-size: 19px; display: flex; gap: 10px; align-items: center; }
+.display-cb b { color: #fff; }
+.display .result-ico { width: 150px; height: 150px; }
+.display-big { font-family: var(--head); font-weight: 800; font-size: clamp(24px, 3.5vw, 40px); color: #cfe9d6; }
+.display-sub { color: rgba(244, 238, 228, 0.65); font-size: 19px; }
+.display-foot { text-align: center; color: rgba(244, 238, 228, 0.25); font-size: 12px; position: relative; }
+.display .tag.type { background: var(--caramel); color: var(--ink); justify-self: start; }
+@media (max-width: 700px) { .display-steps { grid-template-columns: 1fr; } .display { padding: 16px; } .display-steps div { padding: 12px; } }
