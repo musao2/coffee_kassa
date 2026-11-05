@@ -10,7 +10,7 @@ export const fullDate = (iso) =>
     ? new Date(iso).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : ''
 
-export const typeLabel = { cashback: 'Cashback', spend: 'Balansdan', adjust: 'Tuzatish' }
+export const typeLabel = { stamp: 'Xarid', cashback: 'Cashback (eski)', spend: 'Balansdan (eski)', adjust: 'Tuzatish' }
 export const timeAgo = (iso) => {
   if (!iso) return ''
   const s = Math.max(0, Math.round((Date.now() - new Date(iso)) / 1000))
@@ -35,6 +35,9 @@ const ERRORS = {
   CAFE_INACTIVE: 'Kofexona faol emas',
   NOT_FOUND: 'Topilmadi',
   NOT_ADMIN: 'Bu amal faqat admin uchun',
+  CATEGORY_EXISTS: 'Bunday kategoriya allaqachon bor',
+  CATEGORY_NOT_EMPTY: 'Kategoriyada mahsulotlar bor — avval ularni boshqa kategoriyaga o‘tkazing',
+  NOT_ENOUGH_STAMPS: 'Mijozda yetarli shtamp yo‘q',
   EMAIL_TAKEN: 'Bu email boshqa akkauntda band',
   BAD_EMAIL: 'Email noto‘g‘ri kiritilgan',
   WEAK_PASSWORD: 'Parol kamida 6 ta belgidan iborat bo‘lsin',
@@ -42,7 +45,8 @@ const ERRORS = {
   NOTHING_TO_CHANGE: 'O‘zgartirish kiritilmadi',
   BLOCKED: 'Akkaunt bloklangan. Administratorga murojaat qiling',
   BAD_ITEMS: 'Menyudan mahsulot tanlang',
-  NOTE_REQUIRED: 'Sababini yozing',
+  NOTE_REQUIRED: 'Izoh majburiy: kamida 5 ta belgi yozing',
+  ONLY_TODAY: 'Kassir faqat bugungi cheklarni bekor qila oladi. Eskisini admin bekor qiladi',
   NOT_REVERSIBLE: 'Bu tranzaksiyani bekor qilib bo‘lmaydi',
   CAFE_REQUIRED: 'Kassir uchun kofexona tanlang',
   SELF: 'O‘z akkauntingizga bu amalni qo‘llab bo‘lmaydi',

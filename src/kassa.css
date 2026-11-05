@@ -122,3 +122,7 @@
 .display-foot { text-align: center; color: rgba(244, 238, 228, 0.25); font-size: 12px; position: relative; }
 .display .tag.type { background: var(--caramel); color: var(--ink); justify-self: start; }
 @media (max-width: 700px) { .display-steps { grid-template-columns: 1fr; } .display { padding: 16px; } .display-steps div { padding: 12px; } }
+.expense-grid { display: grid; gap: 16px; }
+@media (min-width: 900px) { .expense-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.big-input { font-family: var(--head); font-size: 28px !important; font-weight: 800; min-height: 60px !important; }
+.chips.wrap { flex-wrap: wrap; overflow: visible; }
