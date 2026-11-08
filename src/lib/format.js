@@ -35,6 +35,8 @@ const ERRORS = {
   CAFE_INACTIVE: 'Kofexona faol emas',
   NOT_FOUND: 'Topilmadi',
   NOT_ADMIN: 'Bu amal faqat admin uchun',
+  GENDER_REQUIRED: 'Jinsingizni tanlang',
+  BIRTH_YEAR_REQUIRED: 'Tug‘ilgan yilingizni tanlang',
   CATEGORY_EXISTS: 'Bunday kategoriya allaqachon bor',
   CATEGORY_NOT_EMPTY: 'Kategoriyada mahsulotlar bor — avval ularni boshqa kategoriyaga o‘tkazing',
   NOT_ENOUGH_STAMPS: 'Mijozda yetarli shtamp yo‘q',
@@ -91,3 +93,5 @@ export const extractToken = (text) => {
   } catch {}
   return /^[a-f0-9]{48}$/.test(t) ? t : null
 }
+
+export const genderLabel = { male: 'Erkak', female: 'Ayol', unknown: 'Kiritilmagan' }
