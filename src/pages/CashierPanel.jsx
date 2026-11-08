@@ -9,14 +9,14 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { dateTime, errText, num, som } from '../lib/format'
 import { Mark } from '../components/Logo'
-import ReceiptModal, { CUSTOMER_URL, printPendingReceipt, printReceipt } from '../components/Receipt'
+import ReceiptModal, { printPendingReceipt, printReceipt, scanLink } from '../components/Receipt'
 import Stat from '../components/Stat'
 import StampCard from '../components/StampCard'
 import ReasonModal from '../components/ReasonModal'
 import Expenses from './Expenses'
 
 // QR mijoz ilovasiga olib boradi (kassa boshqa manzilda ishlaydi)
-export const scanUrl = (token) => `${CUSTOMER_URL}/scan?t=${token}`
+export const scanUrl = (token) => scanLink(token)
 
 export default function CashierPanel() {
   const { profile, signOut } = useAuth()

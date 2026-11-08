@@ -86,7 +86,8 @@ export const extractToken = (text) => {
   let t = (text || '').trim()
   try {
     const u = new URL(t)
-    t = u.searchParams.get('t') || ''
+    // mijoz sayti (/scan?t=...) yoki Telegram bot havolasi (t.me/<bot>?startapp=...)
+    t = u.searchParams.get('t') || u.searchParams.get('startapp') || u.searchParams.get('start') || ''
   } catch {}
   return /^[a-f0-9]{48}$/.test(t) ? t : null
 }
