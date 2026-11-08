@@ -20,7 +20,7 @@ export const timeAgo = (iso) => {
   return dateTime(iso)
 }
 export const timeOnly = (iso) => (iso ? new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '')
-export const statusLabel = { pending: 'Kutilmoqda', confirmed: 'Tasdiqlangan', expired: 'Muddati o‘tgan', cancelled: 'Bekor', reversed: 'Qaytarilgan' }
+export const statusLabel = { pending: 'Ochiq QR', sold: 'Sotildi (mijozsiz)', confirmed: 'Tasdiqlangan', expired: 'Muddati o‘tgan', cancelled: 'Bekor', reversed: 'Qaytarilgan' }
 
 export const dateTime = (iso) =>
   iso

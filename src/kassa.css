@@ -126,3 +126,6 @@
 @media (min-width: 900px) { .expense-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
 .big-input { font-family: var(--head); font-size: 28px !important; font-weight: 800; min-height: 60px !important; }
 .chips.wrap { flex-wrap: wrap; overflow: visible; }
+.qr-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.qr-actions .btn { padding: 0 10px; white-space: normal; line-height: 1.15; min-height: 52px; }
+.alert.flash { cursor: pointer; animation: up 0.25s ease; }

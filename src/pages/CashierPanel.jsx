@@ -57,6 +57,8 @@ function Register({ cafe }) {
   const [tx, setTx] = useState(null)
   const [result, setResult] = useState(null)
   const [printingNow, setPrintingNow] = useState(false)
+  const [flash, setFlash] = useState(null)
+  useEffect(() => { if (!flash) return; const t = setTimeout(() => setFlash(null), 6000); return () => clearTimeout(t) }, [flash])
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -124,9 +126,29 @@ function Register({ cafe }) {
     if (tx && phase === 'qr') await supabase.rpc('cancel_transaction', { p_id: tx.id })
     setPhase('input'); setTx(null)
   }
+  // "Keyingi buyurtma": pul olindi, chek chiqarilmadi — sotuv sifatida saqlanadi va hisoblanadi.
+  // Mijoz keyin QR'ni skanerlasa ham shtampini oladi (summa ikki marta hisoblanmaydi).
   const nextOrder = async () => {
-    if (tx) await supabase.rpc('cashier_hide_display', { p_id: tx.id })
+    if (!tx) return reset()
+    setBusy(true); setError('')
+    const { data, error } = await supabase.rpc('cashier_mark_sold', { p_id: tx.id })
+    setBusy(false)
+    if (error) return setError(errText(error))
+    const amount = tx.amount
     reset()
+    setFlash({ kind: 'ok', text: `Sotuv saqlandi — chek №${String(data?.receipt_no ?? '').padStart(6, '0')} · ${som(amount)}` })
+  }
+  // "Yana narsa qo'shish": QR bekor qilinadi, savat saqlanadi — mahsulot qo'shib yangi QR yaratiladi
+  const addMore = async () => {
+    if (tx) {
+      setBusy(true)
+      const { data } = await supabase.rpc('cashier_transaction_status', { p_id: tx.id })
+      if (data?.status === 'confirmed') { setBusy(false); setResult(data); setPhase('done'); return }
+      await supabase.rpc('cancel_transaction', { p_id: tx.id })
+      setBusy(false)
+    }
+    setTx(null); setError(''); setPhase('input')
+    setFlash({ kind: 'info', text: 'Buyurtmaga mahsulot qo‘shing, so‘ng yangi QR yarating' })
   }
   const reset = () => { setTx(null); setResult(null); setCart({}); setError(''); setPhase('input') }
 
@@ -151,7 +173,11 @@ function Register({ cafe }) {
           <p className="waiting"><span className="live-dot" /> Mijoz skanerlashini kutyapmiz</p>
           {error && <div className="alert err"><LuAlertCircle size={18} />{error}</div>}
           <button className="btn btn-primary btn-lg btn-block" onClick={printPending} disabled={printingNow}><LuPrinter size={19} /> {printingNow ? 'Chop etilmoqda…' : 'QR chek chiqarish'}</button>
-          <button className="btn btn-outline btn-block" onClick={nextOrder}>Keyingi buyurtma <LuArrowRight size={18} /></button>
+          <div className="qr-actions">
+            <button className="btn btn-outline" onClick={addMore} disabled={busy}><LuPlus size={18} /> Yana narsa qo‘shish</button>
+            <button className="btn btn-accent" onClick={nextOrder} disabled={busy}>Keyingi buyurtma <LuArrowRight size={18} /></button>
+          </div>
+          <p className="muted small center">“Keyingi buyurtma” — sotuv saqlanadi va hisobotga kiradi (chek chiqmaydi). Mijoz keyin QR’ni skanerlab shtamp olishi mumkin.</p>
           <button className="btn btn-ghost btn-sm" style={{ color: 'var(--red)' }} onClick={cancel}><LuBan size={15} /> QR’ni bekor qilish</button>
         </div>
       </div>
@@ -196,6 +222,11 @@ function Register({ cafe }) {
   return (
     <div className="register">
       <section className="register-left">
+        {flash && (
+          <div className={`alert ${flash.kind === 'ok' ? 'ok' : ''} flash`} onClick={() => setFlash(null)}>
+            {flash.kind === 'ok' ? <LuCheck size={18} /> : <LuPlus size={18} />}<span className="grow">{flash.text}</span>
+          </div>
+        )}
         <div className="chips">
           {categories.map((c) => <button key={c} className={category === c ? 'on' : ''} onClick={() => setCategory(c)}>{c}</button>)}
         </div>
@@ -305,10 +336,10 @@ function Report() {
                 <tr key={r.id} onClick={() => setReceiptId(r.id)} className={`click ${r.status === 'reversed' ? 'dim' : ''}`}>
                   <td className="primary" data-label="Chek №">№{r.receipt_no} {r.free_used > 0 && <span className="tag amber"><LuGift size={12} /> bepul</span>}</td>
                   <td data-label="Vaqt">{dateTime(r.confirmed_at)}</td>
-                  <td data-label="Mijoz">{r.customer_name || '—'}</td>
+                  <td data-label="Mijoz">{r.status === 'sold' ? <span className="tag sold">mijozsiz</span> : r.customer_name || '—'}</td>
                   <td data-label="Buyurtma">{(r.items || []).map((i) => `${i.qty}× ${i.name}`).join(', ') || '—'}</td>
                   <td data-label="To‘lov" className="r num">{num(r.amount - (r.discount || 0))}</td>
-                  <td data-label="Shtamp" className="r num pos">{r.type === 'stamp' ? `+${r.stamps_earned}` : '—'}</td>
+                  <td data-label="Shtamp" className="r num pos">{r.type === 'stamp' && r.status !== 'sold' ? `+${r.stamps_earned}` : '—'}</td>
                   <td className="acts" onClick={(e) => e.stopPropagation()}><div>
                     {r.status === 'reversed' ? <span className="tag reversed">bekor qilingan</span>
                       : r.type === 'stamp' && isToday(r.confirmed_at) && (
