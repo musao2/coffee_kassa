@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { LuAlertCircle, LuCheck, LuPlus, LuReceipt, LuWallet } from 'react-icons/lu'
+import { LuAlertCircle, LuCheck, LuPlus, LuReceipt, LuWallet, LuX } from 'react-icons/lu'
 import { supabase } from '../lib/supabase'
 import { dateTime, errText, num, som } from '../lib/format'
 import { MIN_NOTE } from '../components/ReasonModal'
 
+const QUICK = [1000, 2000, 5000, 10000] // har bosilganda summaga qo'shiladi
 const DEFAULT_CATS = ['Mahsulot', 'Kofe donasi', 'Sut', 'Kommunal', 'Ijara', 'Ish haqi', 'Tozalash', 'Ta’mirlash', 'Transport', 'Boshqa']
 
 // Kassir: kunlik xarajatlarni kiritadi (izoh majburiy)
@@ -53,6 +54,12 @@ export default function Expenses() {
           <label className="field"><span>Summa (so‘m)</span>
             <input className="input big-input num" inputMode="numeric" value={amount ? num(n) : ''} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
           </label>
+          <div className="quick-sum">
+            {QUICK.map((q) => (
+              <button type="button" key={q} className="btn btn-outline" onClick={() => setAmount(String(Math.min(n + q, 999999999)))}>+{num(q)}</button>
+            ))}
+            <button type="button" className="btn btn-ghost" onClick={() => setAmount('')} disabled={!n} aria-label="Summani tozalash" title="Tozalash"><LuX size={18} /></button>
+          </div>
           <div className="field"><span>Turi</span>
             <div className="chips wrap">
               {cats.map((c) => <button type="button" key={c} className={category === c ? 'on' : ''} onClick={() => setCategory(c)}>{c}</button>)}

@@ -129,3 +129,8 @@
 .qr-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
 .qr-actions .btn { padding: 0 10px; white-space: normal; line-height: 1.15; min-height: 52px; }
 .alert.flash { cursor: pointer; animation: up 0.25s ease; }
+
+/* xarajat: tez summa tugmalari */
+.quick-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 8px; margin-top: -4px; }
+.quick-sum .btn { min-width: 0; min-height: 48px; padding: 0 6px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.quick-sum .btn:active { transform: scale(0.96); }
