@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import {
   LuAlertCircle, LuArrowRight, LuBan, LuCalculator, LuCheck, LuChevronDown, LuChevronUp, LuClipboardList,
   LuCoffee, LuCreditCard, LuGift, LuLogOut, LuMinus, LuMonitor, LuPlus, LuPrinter, LuQrCode,
-  LuReceipt, LuRotateCcw, LuTrash2, LuTrendingUp, LuUsers, LuWallet,
+  LuPackage, LuReceipt, LuRotateCcw, LuShoppingBag, LuTrash2, LuTrendingUp, LuUsers, LuWallet,
 } from 'react-icons/lu'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
@@ -320,10 +320,14 @@ function Report() {
       <div className="stats">
         <Stat icon={LuTrendingUp} label="Tushum (to‘langan)" value={v(s?.total_paid, som)} dark wide />
         <Stat icon={LuReceipt} label="Cheklar" value={v(s?.total_count)} />
+        <Stat icon={LuShoppingBag} label="Jami sotilgan mahsulot" value={v(s?.items_sold)} />
         <Stat icon={LuCoffee} label="Sotilgan kofe" value={v(s?.coffees)} />
         <Stat icon={LuGift} label="Bepul berilgan" value={v(s?.free_given)} hint={s ? `−${som(s.discount)}` : ''} />
         <Stat icon={LuUsers} label="Mijozlar" value={v(s?.unique_customers)} />
       </div>
+      <ProductTiles products={data?.products} />
+
+      <SoldProducts data={data} days={days} />
 
       <h3 className="section-title">So‘nggi cheklar</h3>
       {data && data.recent.length === 0 && <div className="empty"><LuReceipt size={36} />Bu davrda amallar yo‘q</div>}
@@ -370,6 +374,72 @@ function Report() {
           onClose={() => setVoidTx(null)}
         />
       )}
+    </div>
+  )
+}
+
+// Hisobot: davrda sotilgan barcha mahsulotlar (kofe va boshqalar), kategoriya bo'yicha
+export function SoldProducts({ data, days }) {
+  const [cat, setCat] = useState('Hammasi')
+  useEffect(() => setCat('Hammasi'), [days])
+  if (!data) return null
+  const products = data.products || []
+  const cats = data.categories || []
+  const shown = cat === 'Hammasi' ? products : products.filter((p) => p.category === cat)
+  const total = shown.reduce((a, p) => ({ qty: a.qty + p.qty, revenue: a.revenue + Number(p.revenue) }), { qty: 0, revenue: 0 })
+  const max = Math.max(1, ...shown.map((p) => p.qty))
+
+  return (
+    <section className="sold-products">
+      <h3 className="section-title">Sotilgan mahsulotlar <span className="muted small">{days === 1 ? 'bugun' : `${days} kun`}</span></h3>
+      {products.length === 0 ? (
+        <div className="empty"><LuPackage size={32} />Bu davrda mahsulot sotilmagan</div>
+      ) : (
+        <>
+          {cats.length > 1 && (
+            <div className="chips">
+              <button className={cat === 'Hammasi' ? 'on' : ''} onClick={() => setCat('Hammasi')}>Hammasi · {num(products.reduce((a, p) => a + p.qty, 0))}</button>
+              {cats.map((c) => <button key={c.category} className={cat === c.category ? 'on' : ''} onClick={() => setCat(c.category)}>{c.category} · {num(c.qty)}</button>)}
+            </div>
+          )}
+          <div className="table-wrap">
+            <table className="table">
+              <thead><tr><th>Mahsulot</th><th>Kategoriya</th><th className="r">Soni</th><th className="r">Summa</th></tr></thead>
+              <tbody>
+                {shown.map((p) => (
+                  <tr key={p.name}>
+                    <td className="primary" data-label="Mahsulot">
+                      <span className="row" style={{ gap: 6 }}>{p.stamp ? <LuCoffee size={15} className="pos" /> : <LuPackage size={15} className="muted" />}{p.name}</span>
+                      <span className="sold-bar"><i style={{ width: `${(p.qty / max) * 100}%` }} /></span>
+                    </td>
+                    <td data-label="Kategoriya">{p.category}</td>
+                    <td data-label="Soni" className="r num"><b>{num(p.qty)} ta</b></td>
+                    <td data-label="Summa" className="r num">{som(p.revenue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot><tr><td colSpan={2}><b>Jami{cat !== 'Hammasi' ? ` · ${cat}` : ''}</b></td><td className="r num"><b>{num(total.qty)} ta</b></td><td className="r num"><b>{som(total.revenue)}</b></td></tr></tfoot>
+            </table>
+          </div>
+          {data.stats?.discount > 0 && cat === 'Hammasi' && <p className="muted small">Summalar chegirmasiz narxda. Bepul berilgan kofe chegirmasi: −{som(data.stats.discount)}</p>}
+        </>
+      )}
+    </section>
+  )
+}
+
+// Har bir sotilgan mahsulot alohida kartochka: nomi, nechta, qancha summaga
+export function ProductTiles({ products }) {
+  if (!products?.length) return null
+  return (
+    <div className="product-tiles">
+      {products.map((p) => (
+        <div key={p.name} className={`ptile ${p.stamp ? 'coffee' : ''}`}>
+          <div className="ptile-top">{p.stamp ? <LuCoffee size={15} /> : <LuPackage size={15} />}<span title={p.name}>{p.name}</span></div>
+          <b className="num">{num(p.qty)} ta</b>
+          <em className="num">{som(p.revenue)}</em>
+        </div>
+      ))}
     </div>
   )
 }

@@ -134,3 +134,28 @@
 .quick-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 8px; margin-top: -4px; }
 .quick-sum .btn { min-width: 0; min-height: 48px; padding: 0 6px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .quick-sum .btn:active { transform: scale(0.96); }
+
+/* hisobot: sotilgan mahsulotlar */
+.sold-products { display: grid; gap: 10px; }
+.sold-bar { display: block; height: 4px; border-radius: 4px; background: var(--paper-2); margin-top: 6px; overflow: hidden; max-width: 220px; }
+.sold-bar i { display: block; height: 100%; background: var(--caramel); border-radius: 4px; }
+.sold-products tfoot td { border-top: 2px solid var(--line); padding-top: 12px; }
+@media (max-width: 760px) {
+  .sold-products .table tfoot { display: block; margin-top: 8px; }
+  .sold-products .table tfoot tr { display: flex; align-items: center; gap: 12px; background: var(--ink); color: var(--paper); border-color: var(--ink); padding: 12px 14px; }
+  .sold-products .table tfoot td { display: block; width: auto; border: 0; padding: 0; white-space: nowrap; }
+  .sold-products .table tfoot td:first-child { flex: 1; text-align: left; }
+  .sold-products .table tfoot td::before { display: none; }
+  .sold-products .sold-bar { display: none; }
+}
+
+/* hisobot: har bir mahsulot alohida kartochka */
+.product-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.ptile { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 4px; min-width: 0; align-content: start; }
+.ptile-top { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink-2); min-width: 0; }
+.ptile-top span { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; overflow-wrap: anywhere; }
+.ptile-top svg { flex: none; color: var(--muted); margin-top: 1px; }
+.ptile.coffee .ptile-top svg { color: var(--caramel); }
+.ptile b { font-family: var(--head); font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.ptile em { font-style: normal; font-size: 12px; color: var(--muted); }
+@media (max-width: 420px) { .product-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
