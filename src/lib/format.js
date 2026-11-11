@@ -47,6 +47,8 @@ const ERRORS = {
   NOTHING_TO_CHANGE: 'O‘zgartirish kiritilmadi',
   BLOCKED: 'Akkaunt bloklangan. Administratorga murojaat qiling',
   BAD_ITEMS: 'Menyudan mahsulot tanlang',
+  SHIFT_CLOSED: 'Smena yopiq — avval smenani oching',
+  SHIFT_ALREADY_OPEN: 'Bu kofexonada smena allaqachon ochiq',
   NOTE_REQUIRED: 'Izoh majburiy: kamida 5 ta belgi yozing',
   ONLY_TODAY: 'Kassir faqat bugungi cheklarni bekor qila oladi. Eskisini admin bekor qiladi',
   NOT_REVERSIBLE: 'Bu tranzaksiyani bekor qilib bo‘lmaydi',

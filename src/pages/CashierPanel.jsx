@@ -14,6 +14,8 @@ import Stat from '../components/Stat'
 import StampCard from '../components/StampCard'
 import ReasonModal from '../components/ReasonModal'
 import Expenses from './Expenses'
+import Report from './Report'
+import { ShiftBar, ShiftGate, ShiftPill, ShiftProvider, useShift } from './Shift'
 
 // QR mijoz ilovasiga olib boradi (kassa boshqa manzilda ishlaydi)
 export const scanUrl = (token) => scanLink(token)
@@ -23,6 +25,7 @@ export default function CashierPanel() {
   const [tab, setTab] = useState('kassa')
 
   return (
+    <ShiftProvider>
     <div className="kassa">
       <header className="pos-top">
         <Mark size={34} light />
@@ -30,6 +33,7 @@ export default function CashierPanel() {
           <small>{profile.full_name || 'Kassir'}</small>
           <b>{profile.cafe?.name || 'Kofexona biriktirilmagan'}</b>
         </div>
+        <ShiftPill />
         <div className="seg dark">
           <button className={tab === 'kassa' ? 'on' : ''} onClick={() => setTab('kassa')} aria-label="Kassa"><LuCalculator size={17} /><span className="hide-sm">Kassa</span></button>
           <button className={tab === 'expense' ? 'on' : ''} onClick={() => setTab('expense')} aria-label="Xarajat"><LuWallet size={17} /><span className="hide-sm">Xarajat</span></button>
@@ -41,14 +45,16 @@ export default function CashierPanel() {
       <main className="pos-main">
         {profile.is_active === false ? (
           <div className="alert err"><LuAlertCircle size={18} />Akkauntingiz bloklangan. Administratorga murojaat qiling.</div>
-        ) : tab === 'kassa' ? <Register cafe={profile.cafe} /> : tab === 'expense' ? <Expenses /> : <Report />}
+        ) : tab === 'kassa' ? <ShiftGate><ShiftBar /><Register cafe={profile.cafe} /></ShiftGate> : tab === 'expense' ? <ShiftGate><Expenses /></ShiftGate> : <Report />}
       </main>
     </div>
+    </ShiftProvider>
   )
 }
 
 function Register({ cafe }) {
   const { profile } = useAuth()
+  const shift = useShift()
   const [allProducts, setAllProducts] = useState([])
   const [catRows, setCatRows] = useState(null)
   const [category, setCategory] = useState('Hammasi')
@@ -104,7 +110,7 @@ function Register({ cafe }) {
     setBusy(true); setError('')
     const { data, error } = await supabase.rpc('create_order', { p_items: lines.map((l) => ({ id: l.id, qty: l.qty })) })
     setBusy(false)
-    if (error) return setError(errText(error))
+    if (error) { if (/SHIFT_CLOSED/.test(error.message)) shift?.reload(); return setError(errText(error)) }
     setTx(data); setOpen(false); setPhase('qr')
     window.scrollTo({ top: 0 })
   }
@@ -150,7 +156,7 @@ function Register({ cafe }) {
     setTx(null); setError(''); setPhase('input')
     setFlash({ kind: 'info', text: 'Buyurtmaga mahsulot qo‘shing, so‘ng yangi QR yarating' })
   }
-  const reset = () => { setTx(null); setResult(null); setCart({}); setError(''); setPhase('input') }
+  const reset = () => { setTx(null); setResult(null); setCart({}); setError(''); setPhase('input'); shift?.reload() }
 
   // Tugma bosilishi bilan chek printerga ketadi (oraliq oyna yo'q)
   const doPrint = async (fn) => {
@@ -282,164 +288,6 @@ function Register({ cafe }) {
           <LuQrCode size={20} /> {busy ? 'Yaratilmoqda…' : 'QR yaratish'}
         </button>
       </aside>
-    </div>
-  )
-}
-
-function Report() {
-  const [days, setDays] = useState(1)
-  const [data, setData] = useState(null)
-  const [error, setError] = useState('')
-  const [receiptId, setReceiptId] = useState(null)
-  const [voidTx, setVoidTx] = useState(null)
-  const [reload, setReload] = useState(0)
-
-  useEffect(() => {
-    setData(null); setError('')
-    supabase.rpc('cashier_report', { p_days: days }).then(({ data, error }) => (error ? setError(errText(error)) : setData(data)))
-  }, [days, reload])
-
-  const isToday = (iso) => new Date(iso).toDateString() === new Date().toDateString()
-  const doVoid = async (note) => {
-    const { error } = await supabase.rpc('cashier_reverse_transaction', { p_id: voidTx.id, p_note: note })
-    if (error) throw new Error(errText(error))
-    setVoidTx(null); setReceiptId(null); setReload((x) => x + 1)
-  }
-
-  const s = data?.stats
-  const v = (x, f = num) => (s ? f(x) : '…')
-  return (
-    <div className="report">
-      <div className="report-head">
-        <h2>Hisobot</h2>
-        <div className="seg">
-          {[[1, 'Bugun'], [7, '7 kun'], [30, '30 kun']].map(([d, l]) => <button key={d} className={days === d ? 'on' : ''} onClick={() => setDays(d)}>{l}</button>)}
-        </div>
-      </div>
-      {error && <div className="alert err"><LuAlertCircle size={18} />{error}</div>}
-      <div className="stats">
-        <Stat icon={LuTrendingUp} label="Tushum (to‘langan)" value={v(s?.total_paid, som)} dark wide />
-        <Stat icon={LuReceipt} label="Cheklar" value={v(s?.total_count)} />
-        <Stat icon={LuShoppingBag} label="Jami sotilgan mahsulot" value={v(s?.items_sold)} />
-        <Stat icon={LuCoffee} label="Sotilgan kofe" value={v(s?.coffees)} />
-        <Stat icon={LuGift} label="Bepul berilgan" value={v(s?.free_given)} hint={s ? `−${som(s.discount)}` : ''} />
-        <Stat icon={LuUsers} label="Mijozlar" value={v(s?.unique_customers)} />
-      </div>
-      <ProductTiles products={data?.products} />
-
-      <SoldProducts data={data} days={days} />
-
-      <h3 className="section-title">So‘nggi cheklar</h3>
-      {data && data.recent.length === 0 && <div className="empty"><LuReceipt size={36} />Bu davrda amallar yo‘q</div>}
-      {data && data.recent.length > 0 && (
-        <div className="table-wrap">
-          <table className="table">
-            <thead><tr><th>Chek №</th><th>Vaqt</th><th>Mijoz</th><th>Buyurtma</th><th className="r">To‘lov</th><th className="r">Shtamp</th><th /></tr></thead>
-            <tbody>
-              {data.recent.map((r) => (
-                <tr key={r.id} onClick={() => setReceiptId(r.id)} className={`click ${r.status === 'reversed' ? 'dim' : ''}`}>
-                  <td className="primary" data-label="Chek №">№{r.receipt_no} {r.free_used > 0 && <span className="tag amber"><LuGift size={12} /> bepul</span>}</td>
-                  <td data-label="Vaqt">{dateTime(r.confirmed_at)}</td>
-                  <td data-label="Mijoz">{r.status === 'sold' ? <span className="tag sold">mijozsiz</span> : r.customer_name || '—'}</td>
-                  <td data-label="Buyurtma">{(r.items || []).map((i) => `${i.qty}× ${i.name}`).join(', ') || '—'}</td>
-                  <td data-label="To‘lov" className="r num">{num(r.amount - (r.discount || 0))}</td>
-                  <td data-label="Shtamp" className="r num pos">{r.type === 'stamp' && r.status !== 'sold' ? `+${r.stamps_earned}` : '—'}</td>
-                  <td className="acts" onClick={(e) => e.stopPropagation()}><div>
-                    {r.status === 'reversed' ? <span className="tag reversed">bekor qilingan</span>
-                      : r.type === 'stamp' && isToday(r.confirmed_at) && (
-                        <button className="btn btn-outline btn-sm" style={{ color: 'var(--red)' }} onClick={() => setVoidTx(r)}><LuRotateCcw size={14} /> Xato — bekor qilish</button>
-                      )}
-                  </div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {receiptId && (
-        <ReceiptModal id={receiptId} onClose={() => setReceiptId(null)}
-          actions={(r) => r.status === 'confirmed' && r.type === 'stamp' && isToday(r.confirmed_at) && (
-            <button className="btn btn-danger" onClick={() => setVoidTx(r)}><LuRotateCcw size={17} /> Xato — bekor qilish</button>
-          )} />
-      )}
-      {voidTx && (
-        <ReasonModal
-          title={`Chek №${voidTx.receipt_no} ni bekor qilish`}
-          text="Chek “xato” deb belgilanadi, mijozning shtamplari (va ishlatilgan bepul kofe) qaytariladi. Bu admin panelda ko‘rinadi."
-          label="Nima uchun xato? (majburiy)"
-          placeholder="Masalan: noto‘g‘ri mahsulot tanlandi, 2 emas 1 ta edi"
-          confirmText="Chekni bekor qilish"
-          danger
-          onConfirm={doVoid}
-          onClose={() => setVoidTx(null)}
-        />
-      )}
-    </div>
-  )
-}
-
-// Hisobot: davrda sotilgan barcha mahsulotlar (kofe va boshqalar), kategoriya bo'yicha
-export function SoldProducts({ data, days }) {
-  const [cat, setCat] = useState('Hammasi')
-  useEffect(() => setCat('Hammasi'), [days])
-  if (!data) return null
-  const products = data.products || []
-  const cats = data.categories || []
-  const shown = cat === 'Hammasi' ? products : products.filter((p) => p.category === cat)
-  const total = shown.reduce((a, p) => ({ qty: a.qty + p.qty, revenue: a.revenue + Number(p.revenue) }), { qty: 0, revenue: 0 })
-  const max = Math.max(1, ...shown.map((p) => p.qty))
-
-  return (
-    <section className="sold-products">
-      <h3 className="section-title">Sotilgan mahsulotlar <span className="muted small">{days === 1 ? 'bugun' : `${days} kun`}</span></h3>
-      {products.length === 0 ? (
-        <div className="empty"><LuPackage size={32} />Bu davrda mahsulot sotilmagan</div>
-      ) : (
-        <>
-          {cats.length > 1 && (
-            <div className="chips">
-              <button className={cat === 'Hammasi' ? 'on' : ''} onClick={() => setCat('Hammasi')}>Hammasi · {num(products.reduce((a, p) => a + p.qty, 0))}</button>
-              {cats.map((c) => <button key={c.category} className={cat === c.category ? 'on' : ''} onClick={() => setCat(c.category)}>{c.category} · {num(c.qty)}</button>)}
-            </div>
-          )}
-          <div className="table-wrap">
-            <table className="table">
-              <thead><tr><th>Mahsulot</th><th>Kategoriya</th><th className="r">Soni</th><th className="r">Summa</th></tr></thead>
-              <tbody>
-                {shown.map((p) => (
-                  <tr key={p.name}>
-                    <td className="primary" data-label="Mahsulot">
-                      <span className="row" style={{ gap: 6 }}>{p.stamp ? <LuCoffee size={15} className="pos" /> : <LuPackage size={15} className="muted" />}{p.name}</span>
-                      <span className="sold-bar"><i style={{ width: `${(p.qty / max) * 100}%` }} /></span>
-                    </td>
-                    <td data-label="Kategoriya">{p.category}</td>
-                    <td data-label="Soni" className="r num"><b>{num(p.qty)} ta</b></td>
-                    <td data-label="Summa" className="r num">{som(p.revenue)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot><tr><td colSpan={2}><b>Jami{cat !== 'Hammasi' ? ` · ${cat}` : ''}</b></td><td className="r num"><b>{num(total.qty)} ta</b></td><td className="r num"><b>{som(total.revenue)}</b></td></tr></tfoot>
-            </table>
-          </div>
-          {data.stats?.discount > 0 && cat === 'Hammasi' && <p className="muted small">Summalar chegirmasiz narxda. Bepul berilgan kofe chegirmasi: −{som(data.stats.discount)}</p>}
-        </>
-      )}
-    </section>
-  )
-}
-
-// Har bir sotilgan mahsulot alohida kartochka: nomi, nechta, qancha summaga
-export function ProductTiles({ products }) {
-  if (!products?.length) return null
-  return (
-    <div className="product-tiles">
-      {products.map((p) => (
-        <div key={p.name} className={`ptile ${p.stamp ? 'coffee' : ''}`}>
-          <div className="ptile-top">{p.stamp ? <LuCoffee size={15} /> : <LuPackage size={15} />}<span title={p.name}>{p.name}</span></div>
-          <b className="num">{num(p.qty)} ta</b>
-          <em className="num">{som(p.revenue)}</em>
-        </div>
-      ))}
     </div>
   )
 }
